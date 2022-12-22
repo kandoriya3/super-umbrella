@@ -7,7 +7,7 @@ import rembg
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = '/path/to/upload/folder'
+UPLOAD_FOLDER = '/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/', methods=['GET'])
