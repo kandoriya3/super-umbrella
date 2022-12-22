@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Result</title>
+    <style>
+      img {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Result</h1>
+    <h2>Input Image</h2>
+    <img id="input-image" src="data:image/png;base64,<!-- Input image data URL -->">
+    <br>
+    <a id="input-download" download="<!-- Input image file name -->">Download</a>
+    <br>
+    <br>
+    <h2>Result Image</h2>
+    <img id="result-image" src="data:image/png;base64,<!-- Result image data URL -->">
+    <br>
+    <a id="result-download" download="<!-- Result image file name -->">Download</a>
+    <script>
+      // Get the input image, result image, input download, and result download elements
+      const inputImage = document.getElementById("input-image");
+      const resultImage = document.getElementById("result-image");
+      const inputDownload = document.getElementById("input-download");
+      const resultDownload = document.getElementById("result-download");
+
+      // Set the input image src and input download href attributes
+      inputImage.src = new URL(window.location.search, window.location.href).searchParams.get("inputSrc");
+      inputDownload.href = inputImage.src;
+
+      // Set the result image src and result download href attributes
+      resultImage.src = new URL(window.location.search, window.location.href).searchParams.get("resultSrc");
+      resultDownload.href = resultImage.src;
+
+      // Set the input download file name and result download file name
+      inputDownload.download = new URL(window.location.search, window.location.href).searchParams.get("inputFileName");
+      resultDownload.download = new URL(window.location.search, window.location.href).searchParams.get("resultFileName");
+    </script>
+  </body>
+</html>
