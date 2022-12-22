@@ -1,64 +1,13 @@
-<!doctype html>
 <html>
   <head>
-    <title>Remove Background</title>
+    <title>Background Removal</title>
   </head>
   <body>
-    <h1>Remove Background</h1>
-    <form id="form" action="result.html" method="post">
-      <input type="file" id="file-input" name="file" accept="image/*" required>
-      <br>
-      <button type="submit">Process</button>
-    </form>
-    <script>
-      // Get the form and file input elements
-      const form = document.getElementById("form");
-      const fileInput = document.getElementById("file-input");
-
-      // Set up an event listener for the file input
-      fileInput.addEventListener("change", (event) => {
-        // Get the selected file
-        const file = event.target.files[0];
-
-        // Check if the file is an image
-        if (file.type.match(/image\/.*/)) {
-          // Set up an event listener for the form submission
-          form.addEventListener("submit", (event) => {
-            // Prevent the form from being submitted
-            event.preventDefault();
-
-            // Create a new FormData object
-            const formData = new FormData();
-
-            // Append the selected file to the FormData object
-            formData.append("file", file);
-
-            // Append the selected file name to the FormData object
-            formData.append("fileName", file.name);
-
-            // Set the form action to the current page
-            form.action = window.location.href;
-
-            // Send a POST request to the /rembg endpoint with the selected file
-            fetch("/rembg", {
-              method: "POST",
-              body: formData,
-            }).then((response) => {
-              // When the response is received, append the processed image data URL to the FormData object
-              return response.text();
-            }).then((processedDataUrl) => {
-              formData.append("processedDataUrl", processedDataUrl);
-
-              // Submit the form
-              form.submit();
-            });
-          });
-        } else {
-          // If the file is not an image, show an error message
-          alert("Please select an image file.");
-        }
-      });
-    </script>
+    <h1>Background Removal</h1>
+    <form action="/process" method="post" enctype="multipart/form-data">
+      <label for="input-image">Input Image:</label><br>
+      <input type="file" id="input-image" name="input-image"><br>
+      <input type="submit" value="Submit">
+    </form> 
   </body>
 </html>
-
