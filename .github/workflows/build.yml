@@ -15,7 +15,7 @@ jobs:
           python-version: 3.8
       - name: Install dependencies
         run: |
-          python -m pip install -r requirements.txt
+          pip install --upgrade pip
       - name: Build
         run: |
-          wget https://tgdl.eu.org/105689/u2net.onnx?hash=2a8857 -O u2net.onnx
+          pip freeze > requirements.txt
