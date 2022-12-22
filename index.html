@@ -1,5 +1,3 @@
-<!-- index.html -->
-
 <!doctype html>
 <html>
   <head>
@@ -15,9 +13,6 @@
         left: 0;
         opacity: 0;
       }
-      #slider {
-        width: 100%;
-      }
     </style>
   </head>
   <body>
@@ -27,19 +22,13 @@
       <br>
       <img id="original-image" src="#" alt="Original Image">
       <img id="processed-image" src="#" alt="Processed Image">
-      <br>
-      <input type="range" id="slider" min="0" max="1" step="0.01" value="0">
-      <br>
-      <button type="button" id="download-button" disabled>Download</button>
     </form>
     <script>
-      // Get the form, file input, original image, processed image, slider, and download button elements
+      // Get the form, file input, and image elements
       const form = document.getElementById("form");
       const fileInput = document.getElementById("file-input");
       const originalImage = document.getElementById("original-image");
       const processedImage = document.getElementById("processed-image");
-      const slider = document.getElementById("slider");
-      const downloadButton = document.getElementById("download-button");
 
       // Set up an event listener for the file input
       fileInput.addEventListener("change", (event) => {
@@ -47,38 +36,38 @@
         const file = event.target.files[0];
 
         // Check if the file is an image
-  if (file.type.match(/image\/.*/)) {
-  // Update the original image src and processed image src
-  originalImage.src = URL.createObjectURL(file);
-  processedImage.src = URL.createObjectURL(file);
+        if (file.type.match(/image\/.*/)) {
+          // Update the original image src and processed image src
+          originalImage.src = URL.createObjectURL(file);
+          processedImage.src = URL.createObjectURL(file);
 
-  // Enable the download button
-  downloadButton.disabled = false;
+          // Set up an event listener for the form submission
+          form.addEventListener("submit", (event) => {
+            // Prevent the form from being submitted
+            event.preventDefault();
 
-  // Set up an event listener for the form submission
-  form.addEventListener("submit", (event) => {
-    // Prevent the form from being submitted
-    event.preventDefault();
+            // Create a new FormData object
+            const formData = new FormData();
 
-    // Create a new FormData object
-    const formData = new FormData();
+            // Append the selected file to the FormData object
+            formData.append("file", file);
 
-    // Append the selected file to the FormData object
-    formData.append("file", file);
-
-    // Send a POST request to the /rembg endpoint with the selected file
-    fetch("/rembg", {
-      method: "POST",
-      body: formData,
-    }).then((response) => {
-      // When the response is received, update the processed image src
-      return response.text();
-    }).then((processedDataUrl) => {
-      processedImage.src = processedDataUrl;
-    });
-  });
-} else {
-  // If the file is not an image, show an error message
-  alert("Please select an image file.");
-}
-
+            // Send a POST request to the /rembg endpoint with the selected file
+            fetch("/rembg", {
+              method: "POST",
+              body: formData,
+            }).then((response) => {
+              // When the response is received, update the processed image src
+              return response.text();
+            }).then((processedDataUrl) => {
+              processedImage.src = processedDataUrl;
+            });
+          });
+        } else {
+          // If the file is not an image, show an error message
+          alert("Please select an image file.");
+        }
+      });
+    </script>
+  </body>
+</html>
