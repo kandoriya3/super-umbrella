@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Photo Background Remover</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+  <form id="upload-form" method="post" enctype="multipart/form-data">
+    <input type="file" name="photo" accept="image/*">
+    <button type="submit">Remove Background</button>
+  </form>
+  <div id="resulting-image"></div>
+  <script>
+    $(document).ready(function() {
+      $('#upload-form').submit(function(e) {
+        // prevent the form from submitting
+        e.preventDefault();
+
+        // create a FormData object from the form
+        var formData = new FormData(this);
+
+        // make an AJAX request to the server
+        $.ajax({
+          type: 'POST',
+          url: 'process.py',
+          data: formData,
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function(data) {
+            // update the resulting image on the webpage
+            $('#resulting-image').html('<img src="' + data + '" alt="Resulting image">');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
