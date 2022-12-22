@@ -47,7 +47,7 @@
         const file = event.target.files[0];
 
         // Check if the file is an image
-if (file.type.match(/image\/.*/)) {
+  if (file.type.match(/image\/.*/)) {
   // Update the original image src and processed image src
   originalImage.src = URL.createObjectURL(file);
   processedImage.src = URL.createObjectURL(file);
