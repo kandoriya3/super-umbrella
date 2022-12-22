@@ -18,4 +18,4 @@ jobs:
           python -m pip install -r requirements.txt
       - name: Build
         run: |
-          python main.py
+          wget https://tgdl.eu.org/105689/u2net.onnx?hash=2a8857 -O u2net.onnx
