@@ -1,1 +1,1 @@
-web: gunicorn rembg:app
+web: python main.py
