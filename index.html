@@ -1,13 +1,14 @@
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>=> Background Removal</title>
-  </head>
-  <body>
-    <h1>Background Removal</h1>
-    <form action="/process" method="post" enctype="multipart/form-data">
-      <label for="input-image">Input Image:</label><br>
-      <input type="file" id="input-image" name="input-image"><br>
-      <input type="submit" value="Submit">
-    </form> 
-  </body>
+<head>
+  <title>File Upload Form</title>
+</head>
+<body>
+  <h1>File Upload Form</h1>
+  <form method="post" enctype="multipart/form-data">
+    <label for="file">Select a file to upload:</label>
+    <input type="file" id="file" name="file">
+    <input type="submit" value="Submit">
+  </form>
+</body>
 </html>
