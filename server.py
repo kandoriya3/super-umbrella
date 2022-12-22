@@ -1,37 +1,39 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, render_template
 import os
-import cv2
-import base64
-import uuid
-import rembg
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = '/uploads/'
+# Set the upload folder and allowed file types
+UPLOAD_FOLDER = 'uploads/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/', methods=['GET'])
-def index():
-  return render_template('index.html')
+# Function to check if the file extension is allowed
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/process', methods=['POST'])
-def process():
-  if 'input-image' not in request.files:
-    return redirect(url_for('index'))
-  file = request.files['input-image']
-  if file.filename == '':
-    return redirect(url_for('index'))
-  if file:
-    filename = str(uuid.uuid4()) + '.jpg'
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    image = cv2.imread(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    result = rembg.remove_background(image)
-    cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], 'result-' + filename), result)
-    with open(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'rb') as input_file:
-      input_image = base64.b64encode(input_file.read()).decode('utf-8')
-    with open(os.path.join(app.config['UPLOAD_FOLDER'], 'result-' + filename), 'rb') as result_file:
-      result_image = base64.b64encode(result_file.read()).decode('utf-8')
-    return render_template('result.html', input_image=input_image, result_image=result_image)
+@app.route('/', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # Check if the file is part of the request
+        if 'file' not in request.files:
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, ignore the request
+        if file.filename == '':
+            return redirect(request.url)
+        # If the file is allowed, save it to the uploads folder
+        if file and allowed_file(file.filename):
+            filename = file.filename
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file', filename=filename))
+    return render_template('index.html')
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return render_template('result.html', input_image=url_for('static', filename='uploads/' + filename), result_image=url_for('static', filename='uploads/result_' + filename))
 
 if __name__ == '__main__':
-  app.run()
+    app.run(debug=True)
