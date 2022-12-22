@@ -35,9 +35,9 @@ def rembg():
   # Apply the mask to the image
   processed_image = cv2.bitwise_and(image, mask)
 
-  # Encode the processed image as a JPEG and return it as a data URL
-  _, jpeg_data = cv2.imencode(".jpg", processed_image)
-  processed_data_url = f"data:image/jpeg;base64,{base64.b64encode(jpeg_data).decode()}"
+  # Encode the processed image as a PNG and return it as a data URL
+  _, png_data = cv2.imencode(".png", processed_image)
+  processed_data_url = f"data:image/png;base64,{base64.b64encode(png_data).decode()}"
 
   # Return the processed image data URL as the response
   return processed_data_url
