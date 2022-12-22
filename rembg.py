@@ -1,41 +1,38 @@
 import cv2
 import numpy as np
 
-def gaussian_blur(image, kernel_size=5):
-  return cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
+def remove_background(image_path):
+  # Load image
+  image = cv2.imread(image_path)
 
-def edge_detection(image, threshold1=50, threshold2=150):
-  return cv2.Canny(image, threshold1, threshold2)
+  # Convert image to grayscale
+  gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-def median_filter(image, kernel_size=3):
-  return cv2.medianBlur(image, kernel_size)
+  # Apply Gaussian blur
+  blur = cv2.GaussianBlur(gray, (5,5), 0)
 
-def find_contours(image):
-  _, contours, _ = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-  return contours
+  # Apply edge detection
+  edges = cv2.Canny(blur, 100, 200)
 
-def mask_background(image, contours):
-  mask = np.zeros_like(image)
-  cv2.drawContours(mask, contours, -1, 255, -1)
-  return mask
+  # Apply median filter to remove salt and pepper noise
+  median = cv2.medianBlur(edges, 5)
 
-def remove_background(image):
-  # Step 1: Gaussian Blur
-  image = gaussian_blur(image)
-  
-  # Step 2: Edge Detection
-  edges = edge_detection(image)
-  
-  # Step 3: Filter Out Salt and Pepper Noise using Median Filter
-  edges = median_filter(edges)
-  
-  # Step 4: Find Significant Contours
-  contours = find_contours(edges)
-  
-  # Step 5: Masking Probable Background
-  mask = mask_background(image, contours)
-  
-  # Apply mask to input image
-  result = cv2.bitwise_and(image, mask)
-  
-  return result
+  # Find significant contours
+  _, contours, _ = cv2.findContours(median, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
+
+  # Create mask
+  mask = np.zeros(image.shape, np.uint8)
+  for c in contours:
+    cv2.drawContours(mask, [c], -1, (255,255,255), -1)
+
+  # Mask image
+  masked_image = cv2.bitwise_and(image, mask)
+
+  return masked_image
+
+if __name__ == '__main__':
+  # Test function
+  image_path = 'image.jpg'
+  result = remove_background(image_path)
+  cv2.imwrite('result.jpg', result)
