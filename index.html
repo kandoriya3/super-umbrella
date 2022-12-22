@@ -2,33 +2,18 @@
 <html>
   <head>
     <title>Remove Background</title>
-    <style>
-      #original-image {
-        width: 100%;
-      }
-      #processed-image {
-        width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 0;
-      }
-    </style>
   </head>
   <body>
     <h1>Remove Background</h1>
-    <form id="form">
-      <input type="file" id="file-input" accept="image/*">
+    <form id="form" action="result.html" method="post">
+      <input type="file" id="file-input" name="file" accept="image/*" required>
       <br>
-      <img id="original-image" src="#" alt="Original Image">
-      <img id="processed-image" src="#" alt="Processed Image">
+      <button type="submit">Process</button>
     </form>
     <script>
-      // Get the form, file input, and image elements
+      // Get the form and file input elements
       const form = document.getElementById("form");
       const fileInput = document.getElementById("file-input");
-      const originalImage = document.getElementById("original-image");
-      const processedImage = document.getElementById("processed-image");
 
       // Set up an event listener for the file input
       fileInput.addEventListener("change", (event) => {
@@ -37,10 +22,6 @@
 
         // Check if the file is an image
         if (file.type.match(/image\/.*/)) {
-          // Update the original image src and processed image src
-          originalImage.src = URL.createObjectURL(file);
-          processedImage.src = URL.createObjectURL(file);
-
           // Set up an event listener for the form submission
           form.addEventListener("submit", (event) => {
             // Prevent the form from being submitted
@@ -52,15 +33,24 @@
             // Append the selected file to the FormData object
             formData.append("file", file);
 
+            // Append the selected file name to the FormData object
+            formData.append("fileName", file.name);
+
+            // Set the form action to the current page
+            form.action = window.location.href;
+
             // Send a POST request to the /rembg endpoint with the selected file
             fetch("/rembg", {
               method: "POST",
               body: formData,
             }).then((response) => {
-              // When the response is received, update the processed image src
+              // When the response is received, append the processed image data URL to the FormData object
               return response.text();
             }).then((processedDataUrl) => {
-              processedImage.src = processedDataUrl;
+              formData.append("processedDataUrl", processedDataUrl);
+
+              // Submit the form
+              form.submit();
             });
           });
         } else {
@@ -71,3 +61,4 @@
     </script>
   </body>
 </html>
+
