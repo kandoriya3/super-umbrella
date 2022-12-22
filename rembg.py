@@ -16,20 +16,24 @@ def rembg():
   image_data = base64.b64decode(data_url.split(",")[1])
   image = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
 
-  # Convert the image to grayscale
-  gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+  # Step 1: Gaussian Blur
+  image = cv2.GaussianBlur(image, (5, 5), 0)
 
-  # Detect edges using the Canny algorithm
-  edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+  # Step 2: Edge Detection
+  edges = cv2.Canny(image, 50, 150, apertureSize=3)
 
-  # Create a mask with the same size as the image and fill it with white
-  mask = np.ones(image.shape[:2], dtype=np.uint8) * 255
+  # Step 3: Filter Out Salt and Pepper Noise using Median Filter
+  edges = cv2.medianBlur(edges, 3)
 
-  # Set the pixels in the mask to black where the edges were detected
-  mask[edges != 0] = 0
+  # Step 4: Find Significant Contours
+  cnts, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+  # Step 5: Masking Probable Background
+  mask = np.zeros_like(image)
+  cv2.drawContours(mask, cnts, -1, (255, 255, 255), -1)
 
   # Apply the mask to the image
-  processed_image = cv2.bitwise_and(image, image, mask=mask)
+  processed_image = cv2.bitwise_and(image, mask)
 
   # Encode the processed image as a JPEG and return it as a data URL
   _, jpeg_data = cv2.imencode(".jpg", processed_image)
