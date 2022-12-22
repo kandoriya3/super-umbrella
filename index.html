@@ -1,4 +1,90 @@
-<form action="process.py" method="post" enctype="multipart/form-data">
-  <input type="file" name="photo" accept="image/*">
-  <button type="submit">Remove Background</button>
-</form>
+<!-- index.html -->
+
+<!-- HTML structure and CSS styles -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Photo Background Removal</title>
+  <style>
+    /* Add your CSS styles here */
+  </style>
+</head>
+<body>
+  <!-- Form for uploading a photo -->
+  <form id="upload-form">
+    <label for="photo">Select a photo:</label>
+    <input type="file" id="photo" accept="image/*">
+    <button type="submit">Process</button>
+  </form>
+
+  <!-- Container element for displaying the processed image -->
+  <div id="image-container">
+    <!-- Original image -->
+    <img id="original-image" src="#" alt="Original image">
+    <!-- Processed image -->
+    <img id="processed-image" src="#" alt="Processed image">
+  </div>
+
+  <!-- Slider for toggling between original and processed images -->
+  <input type="range" id="image-slider" min="0" max="1" step="0.01" value="0">
+
+  <!-- Download button for saving the processed image -->
+  <button id="download-button">Download</button>
+
+  <!-- JavaScript for handling file upload and image processing -->
+  <script>
+    // Get form and input elements
+    const form = document.getElementById("upload-form");
+    const photoInput = document.getElementById("photo");
+
+    // Handle form submission
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+
+      // Read the uploaded photo as a data URL
+      const reader = new FileReader();
+      reader.readAsDataURL(photoInput.files[0]);
+      reader.onload = () => {
+        // Pass the data URL to the rembg script to remove the background
+        removeBackground(reader.result).then(processedImageUrl => {
+          // Display the processed image
+          const originalImage = document.getElementById("original-image");
+          const processedImage = document.getElementById("processed-image");
+          originalImage.src = reader.result;
+          processedImage.src = processedImageUrl;
+        });
+      };
+    });
+
+    // Function for calling the rembg script
+    async function removeBackground(dataUrl) {
+      // Send a POST request to the rembg script with the data URL as the request body
+      const response = await fetch("/rembg", {
+        method: "POST",
+        body: dataUrl
+      });
+      // Return the response as a data URL
+      return response.text();
+    }
+
+        // Add event listeners for the slider and download button
+    const slider = document.getElementById("image-slider");
+    const downloadButton = document.getElementById("download-button");
+    slider.addEventListener("input", event => {
+      // Update the image visibility based on the slider value
+      const originalImage = document.getElementById("original-image");
+      const processedImage = document.getElementById("processed-image");
+      originalImage.style.opacity = 1 - event.target.value;
+      processedImage.style.opacity = event.target.value;
+    });
+    downloadButton.addEventListener("click", event => {
+      // Create a link element and simulate a click to download the processed image
+      const link = document.createElement("a");
+      link.href = document.getElementById("processed-image").src;
+      link.download = "processed-image.jpg";
+      link.click();
+    });
+  </script>
+</body>
+</html>
