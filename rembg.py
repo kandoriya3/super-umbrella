@@ -1,46 +1,43 @@
-# rembg.py
-
-import base64
 import cv2
-import numpy as np
-from flask import Flask, request
+import base64
+import io
 
-app = Flask(__name__)
+def pipeline(input_image):
+    # Gaussian blur
+    blur = cv2.GaussianBlur(input_image, (5, 5), 0)
 
-@app.route("/rembg", methods=["POST"])
-def rembg():
-  # Get the data URL of the uploaded image from the request body
-  data_url = request.data
+    # Edge detection
+    edges = cv2.Canny(blur, 75, 200)
 
-  # Load the image from the data URL
-  image_data = base64.b64decode(data_url.split(",")[1])
-  image = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
+    # Median filter
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    median = cv2.medianBlur(edges, 3)
 
-  # Step 1: Gaussian Blur
-  image = cv2.GaussianBlur(image, (5, 5), 0)
+    # Dilate
+    dilate = cv2.dilate(median, kernel, iterations=5)
 
-  # Step 2: Edge Detection
-  edges = cv2.Canny(image, 50, 150, apertureSize=3)
+    # Find significant contours
+    _, contours, _ = cv2.findContours(dilate, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    mask = np.zeros(input_image.shape, dtype=np.uint8)
+    cv2.drawContours(mask, contours, 0, (255, 255, 255), -1)
 
-  # Step 3: Filter Out Salt and Pepper Noise using Median Filter
-  edges = cv2.medianBlur(edges, 3)
+    # Mask probable background
+    mask = cv2.bitwise_not(mask)
+    output_image = cv2.bitwise_and(input_image, input_image, mask=mask)
 
-  # Step 4: Find Significant Contours
-  cnts, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    return output_image
 
-  # Step 5: Masking Probable Background
-  mask = np.zeros_like(image)
-  cv2.drawContours(mask, cnts, -1, (255, 255, 255), -1)
+def process_image(input_path, output_path):
+    # Load the input image
+    input_image = cv2.imread(input_path)
 
-  # Apply the mask to the image
-  processed_image = cv2.bitwise_and(image, mask)
+    # Run the image processing pipeline
+    output_image = pipeline(input_image)
 
-  # Set the dimensions of the processed image to match the original image
-  processed_image = cv2.resize(processed_image, (image.shape[1], image.shape[0]))
+    # Encode the output image as a PNG
+    png_bytes = io.BytesIO()
+    cv2.imwrite(png_bytes, output_image)
 
-  # Encode the processed image as a PNG and return it as a data URL
-  _, png_data = cv2.imencode(".png", processed_image)
-  processed_data_url = f"data:image/png;base64,{base64.b64encode(png_data).decode()}"
-
-  # Return the processed image data URL as the response
-  return processed_data_url
+    # Return the output image as a data URL
+    return "data:image/png;base64," + base64.b64encode(png_bytes.getvalue()).decode()
