@@ -26,10 +26,7 @@ def remove_background(image_path):
   for c in contours:
     cv2.drawContours(mask, [c], -1, (255,255,255), -1)
 
-  # Mask image
-  masked_image = cv2.bitwise_and(image, mask)
-
-  return masked_image
+  return cv2.bitwise_and(image, mask)
 
 if __name__ == '__main__':
   # Test function
